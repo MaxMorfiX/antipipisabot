@@ -12,8 +12,6 @@ app = Client("Antipipisabot", api_id=API_ID, api_hash=API_HASH, phone_number=PHO
 #you can also login with only these two, and then pyrogram would prompt you
 #to enter phone number & password on your first login
 
-# print(API_ID, API_HASH, PHONE_NUMBER, PASSWORD)
-
 bot_phrases_to_pass = (
 
     "твой писюн вырос",
@@ -67,7 +65,6 @@ async def got_message_from_bot(client: 'Client', message: 'Message'):
         print(f"Couldn't delete: {e}")
 
 async def delete_message(message: 'Message'):
-    # await message.reply("реклама")
     
     if(FORWARD_DELETED_MESSAGES): await message.forward(FORWARD_DELETED_MESSAGES)
     

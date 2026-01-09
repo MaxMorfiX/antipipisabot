@@ -15,3 +15,5 @@ FORWARD_DELETED_MESSAGES = False
 #обычно трогать не нужно
 #usually does't need any adjustment
 PIPISABOT_USER_ID = 1264548383
+ENABLE_TELEGRAM_LOGS = False
+CHAT_FOR_LOGS_ID = False

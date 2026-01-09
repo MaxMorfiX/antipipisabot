@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pyrogram.types import Message
 
-from config import API_ID, API_HASH, PHONE_NUMBER, PASSWORD
+from config import API_ID, API_HASH, PHONE_NUMBER, PASSWORD, FORWARD_DELETED_MESSAGES, PIPISABOT_USER_ID
 app = Client("Antipipisabot", api_id=API_ID, api_hash=API_HASH, phone_number=PHONE_NUMBER, password=PASSWORD)
 # app = Client("Antipipisabot", api_id=API_ID, api_hash=API_HASH)
 
@@ -42,8 +42,6 @@ bot_phrases_to_pass = (
     
 )
 
-PIPISABOT_USER_ID = 1264548383
-
 @app.on_message(filters.incoming & filters.bot & filters.group & filters.user(PIPISABOT_USER_ID))
 async def got_message_from_bot(client: 'Client', message: 'Message'):
     
@@ -70,6 +68,8 @@ async def got_message_from_bot(client: 'Client', message: 'Message'):
 
 async def delete_message(message: 'Message'):
     # await message.reply("реклама")
+    
+    if(FORWARD_DELETED_MESSAGES): await message.forward(FORWARD_DELETED_MESSAGES)
     
     await message.delete()
     

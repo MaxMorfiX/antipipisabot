@@ -66,7 +66,10 @@ async def got_message_from_bot(client: 'Client', message: 'Message'):
 
 async def delete_message(message: 'Message'):
     
-    if(FORWARD_DELETED_MESSAGES): await message.forward(FORWARD_DELETED_MESSAGES)
+    if(FORWARD_DELETED_MESSAGES): await message.forward(chat_id=FORWARD_DELETED_MESSAGES)
+    #from https://docs.pyrogram.org/faq/peer-id-invalid-error:
+    #"Peer id invalid" error could mean, that the chat id refers to a user or chat your current session hasn’t met yet.
+    #idk what would be an elegant way to fix this
     
     await message.delete()
     

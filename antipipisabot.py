@@ -75,6 +75,7 @@ async def delete_message(message: 'Message'):
         await log("#deleted successfully\nСообщение было удалено успешно!", True)
     except Exception as e:
         await log(f"#error occured during message deletion: {e}", True)
+        # await app.send_message(message.chat.id, f"Ошибка при удалении рекламы: {e}")
     
 async def log(text: str, in_forwarded_chat_too: bool = False):
     

@@ -69,6 +69,13 @@ async def delete_message(message: 'Message'):
         if(FORWARD_DELETED_MESSAGES): await message.forward(chat_id=FORWARD_DELETED_MESSAGES)
     except Exception as e:
         await log(e)
+        
+        if e != 'Telegram says: [400 PEER_ID_INVALID] - The peer id being used is invalid or not known yet. Make sure you meet the peer before interacting with it (caused by "messages.ForwardMessages")': return
+        
+        await log("trying to refresh all chat id's...")
+        async for dialog in app.get_dialogs():
+            pass
+        await log("succes!? (idk)")
     
     try:
         await message.delete()
@@ -81,12 +88,23 @@ async def log(text: str, in_forwarded_chat_too: bool = False):
     
     print(text)
     
-    if in_forwarded_chat_too:
-        if FORWARD_DELETED_MESSAGES: await app.send_message(FORWARD_DELETED_MESSAGES, text)
+    try:
+    
+        if in_forwarded_chat_too:
+            if FORWARD_DELETED_MESSAGES: await app.send_message(FORWARD_DELETED_MESSAGES, text)
+    
+    except Exception as e:
+        await print(f"#error occured during 1st stage of logging (into forwarded messages chat): {e}", True)
+    
     
     if(not TELEGRAM_LOGS): return
     
-    await app.send_message(TELEGRAM_LOGS, text)
+    try:
+    
+        await app.send_message(TELEGRAM_LOGS, text)
+    
+    except Exception as e:
+        await print(f"#error occured during 2nd stage of logging (into telegram log chat): {e}", True)
 
 async def after_startup():
      

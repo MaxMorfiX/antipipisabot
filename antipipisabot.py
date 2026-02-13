@@ -80,8 +80,7 @@ async def delete_message(message: 'Message'):
         if e != 'Telegram says: [400 PEER_ID_INVALID] - The peer id being used is invalid or not known yet. Make sure you meet the peer before interacting with it (caused by "messages.ForwardMessages")': return
         
         await log("trying to refresh all chat id's...")
-        async for dialog in app.get_dialogs():
-            pass
+        await initialize_chats()
         await log("succes!? (idk)")
     
     try:
@@ -90,7 +89,15 @@ async def delete_message(message: 'Message'):
     except Exception as e:
         await log(f"#error occured during message deletion: {e}", True)
         # await app.send_message(message.chat.id, f"Ошибка при удалении рекламы: {e}")
+
+async def initialize_chats():
+    async for dialog in app.get_dialogs():
+        pass
     
+    #^this is fix for the https://docs.pyrogram.org/faq/peer-id-invalid-error error
+    #where the chat id refers to a user or chat client current session hasn’t met yet,
+    #so in the beginning of each session I get all chats the user has so that this error has no chance of occuring
+
 async def log(text: str, in_forwarded_chat_too: bool = False):
     
     print(text)
@@ -121,11 +128,7 @@ async def after_startup():
         
         print("Initializing chats...")
         
-        async for dialog in app.get_dialogs():
-            pass
-        #^this is fix for the https://docs.pyrogram.org/faq/peer-id-invalid-error error
-        #where the chat id refers to a user or chat client current session hasn’t met yet,
-        #so in the beginning of each session I get all chats the user has so that this error has no chance of occuring
+        initialize_chats()
 
         await log("Application is online!")
        

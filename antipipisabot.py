@@ -49,7 +49,14 @@ async def got_message_from_bot(client: 'Client', message: 'Message'):
     await log(f"\ngot message in group {message.chat.title} ({message.chat.id}) from {message.from_user.first_name} ({message.from_user.id}) with id {message.id}:")
     await log(message.text)
     
-    if message.text == "none": return
+    if message.video_note:
+        log(f"the message is a video note, it will be deleted")
+        await delete_message(message)
+        return
+    
+    if message.text == "none":
+        log(f"got #strange message, it won't be deleted")
+        return
     
     for phrase in bot_phrases_to_pass:
         if phrase not in message.text: continue

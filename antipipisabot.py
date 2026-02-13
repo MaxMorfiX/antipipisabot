@@ -80,8 +80,12 @@ async def delete_message(message: 'Message'):
         if e != 'Telegram says: [400 PEER_ID_INVALID] - The peer id being used is invalid or not known yet. Make sure you meet the peer before interacting with it (caused by "messages.ForwardMessages")': return
         
         await log("trying to refresh all chat id's...")
+        
         await initialize_chats()
+        
         await log("succes!? (idk)")
+        
+        await retry_message_forwarding(message)
     
     try:
         await message.delete()
@@ -89,6 +93,19 @@ async def delete_message(message: 'Message'):
     except Exception as e:
         await log(f"#error occured during message deletion: {e}", True)
         # await app.send_message(message.chat.id, f"Ошибка при удалении рекламы: {e}")
+
+async def retry_message_forwarding(message): #yeah code duplication but imo it's cleaner like this
+    log("trying to forward the message once more...")
+    try:
+        await message.forward(chat_id=FORWARD_DELETED_MESSAGES)
+    except Exception as e:
+        await log(e)
+        
+        if e != 'Telegram says: [400 PEER_ID_INVALID] - The peer id being used is invalid or not known yet. Make sure you meet the peer before interacting with it (caused by "messages.ForwardMessages")': return
+        
+        await log("refreshing all chat id's...")
+        await initialize_chats()
+        await log("succes!? (prob not)")
 
 async def initialize_chats():
     async for dialog in app.get_dialogs():

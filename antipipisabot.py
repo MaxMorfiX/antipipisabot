@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pyrogram.types import Message
 
-from config import API_ID, API_HASH, PHONE_NUMBER, PASSWORD, FORWARD_DELETED_MESSAGES, PIPISABOT_USER_ID, TELEGRAM_LOGS
+from config import API_ID, API_HASH, PHONE_NUMBER, PASSWORD, FORWARD_DELETED_MESSAGES, PIPISABOT_USER_ID, TELEGRAM_LOGS, TEST_MODE
 app = Client("Antipipisabot", api_id=API_ID, api_hash=API_HASH, phone_number=PHONE_NUMBER, password=PASSWORD)
 # app = Client("Antipipisabot", api_id=API_ID, api_hash=API_HASH)
 
@@ -40,7 +40,7 @@ bot_phrases_to_pass = (
     
 )
 
-@app.on_message(filters.incoming & filters.bot & filters.group & filters.user(PIPISABOT_USER_ID))
+@app.on_message(filters.incoming & filters.bot & filters.group & filters.user(PIPISABOT_USER_ID) | (filters.outgoing if TEST_MODE else filters.empty))
 async def got_message_from_bot(client: 'Client', message: 'Message'):
     
     if not message.text:

@@ -12,7 +12,10 @@ API_HASH = "abcd13efg4hijkl637mn3o7prst45q34"
 #replace with the id of chat you want to resend the messages to if you want
 FORWARD_DELETED_MESSAGES = False
 
-#обычно трогать не нужно
+#всё ниже этого обычно трогать не нужно
 #usually does't need any adjustment
 PIPISABOT_USER_ID = 1264548383
 TELEGRAM_LOGS = False
+
+#для тестирования
+TEST_MODE = False

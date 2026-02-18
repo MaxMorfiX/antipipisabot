@@ -43,41 +43,111 @@ bot_phrases_to_pass = (
 @app.on_message(filters.incoming & filters.bot & filters.group & filters.user(PIPISABOT_USER_ID) | (filters.outgoing if TEST_MODE else filters.empty))
 async def got_message_from_bot(client: 'Client', message: 'Message'):
     
-    if not message.text:
-        message.text = message.caption or "none"
+    text = extract_visible_text(message)
     
-    await log(f"\ngot message in group {message.chat.title} ({message.chat.id}) from {message.from_user.first_name} ({message.from_user.id}) with id {message.id}:")
-    await log(message.text)
-    
-    if message.video_note:
-        log(f"the message is a video note, it will be deleted")
-        await delete_message(message)
-        return
-    
-    if message.text == "none":
-        log(f"got #strange message, it won't be deleted")
-        return
+    await log(f"\ngot message in group {message.chat.title} ({message.chat.id}) from {message.from_user.first_name} ({message.from_user.id}) with id {message.id} with the following extracted text:\n\n{text}")
     
     for phrase in bot_phrases_to_pass:
-        if phrase not in message.text: continue
+        if phrase not in text: continue
         
-        await log(f"matched the string '{phrase}', exiting the function")
+        await log(f"matched the string '{phrase}', exiting the function and keeping the message")
+        
+        return
+    
+    await log("dinn't find a match in the extracted text, trying to match the raw message just in case...")
+    
+    raw_message = str(message)
+    
+    for phase in bot_phrases_to_pass:
+        if phase not in raw_message: continue
+        
+        await log(f"#strange matched the string '{phase}' in the raw message string, exiting the function and keeping the message")
+        
         return
 
     await log("didn't find any match, the message would be deleted")
     
     await delete_message(message)
 
+#DeepSeek said this might be better or so lol
+def extract_visible_text(message):
+    
+    parts = []
+
+    # Basic text fields
+    if message.text:
+        parts.append(message.text)
+    if message.caption:
+        parts.append(message.caption)
+
+    # Poll
+    if message.poll:
+        parts.append(message.poll.question)
+        for opt in message.poll.options:
+            parts.append(opt.text)
+
+    # Game
+    if message.game:
+        parts.append(message.game.title)
+        if message.game.description:
+            parts.append(message.game.description)
+
+    # Sticker emoji
+    if message.sticker and message.sticker.emoji:
+        parts.append(message.sticker.emoji)
+
+    # Contact
+    if message.contact:
+        if message.contact.first_name:
+            parts.append(message.contact.first_name)
+        if message.contact.last_name:
+            parts.append(message.contact.last_name)
+        if message.contact.phone_number:
+            parts.append(message.contact.phone_number)
+
+    # Venue
+    if message.venue:
+        parts.append(message.venue.title)
+        parts.append(message.venue.address)
+
+    # Audio
+    if message.audio:
+        if message.audio.title:
+            parts.append(message.audio.title)
+        if message.audio.performer:
+            parts.append(message.audio.performer)
+
+    # Service: new chat title
+    if message.new_chat_title:
+        parts.append(message.new_chat_title)
+
+    # Pinned message – contains its own text, so we call this same function recursively
+    if message.pinned_message:
+        pinned_text = extract_visible_text(message.pinned_message)
+        if pinned_text:
+            parts.append(pinned_text)
+
+    # Inline keyboard buttons
+    if message.reply_markup and message.reply_markup.inline_keyboard:
+        for row in message.reply_markup.inline_keyboard:
+            for button in row:
+                if button.text:
+                    parts.append(button.text)
+
+    # Join everything, filtering out empty strings
+    return "\n".join(filter(None, parts))
+
 async def delete_message(message: 'Message'):
     
     await log("Deleting...")
     
     try:
+        if(FORWARD_DELETED_MESSAGES & TEST_MODE): await message.forward(chat_id=TELEGRAM_LOGS)
         if(FORWARD_DELETED_MESSAGES): await message.forward(chat_id=FORWARD_DELETED_MESSAGES)
     except Exception as e:
         await log(e)
         
-        if e != 'Telegram says: [400 PEER_ID_INVALID] - The peer id being used is invalid or not known yet. Make sure you meet the peer before interacting with it (caused by "messages.ForwardMessages")': return
+        if "[400 PEER_ID_INVALID]" not in str(e) and "Peer id invalid" not in str(e): return
         
         await log("trying to refresh all chat id's...")
         
@@ -118,6 +188,10 @@ async def initialize_chats():
 async def log(text: str, in_forwarded_chat_too: bool = False):
     
     print(text)
+    
+    if len(str(text)) > 4096:
+        log("#the text is too long, it will be truncated for logging purposes")
+        text = text[:4093] + "..."
     
     try:
     

@@ -40,7 +40,15 @@ bot_phrases_to_pass = (
     
 )
 
-@app.on_message(filters.incoming & filters.bot & filters.group & filters.user(PIPISABOT_USER_ID) | (filters.outgoing if TEST_MODE else filters.empty))
+# Build the base filter
+base_filter = filters.incoming & filters.bot & filters.group & filters.user(PIPISABOT_USER_ID)
+
+# If in test mode, also include outgoing messages
+if TEST_MODE:
+    base_filter = base_filter | filters.outgoing
+
+
+@app.on_message(base_filter)
 async def got_message_from_bot(client: 'Client', message: 'Message'):
     
     text = extract_visible_text(message)

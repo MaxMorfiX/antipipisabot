@@ -227,7 +227,7 @@ async def after_startup():
         
         print("Initializing chats...")
         
-        initialize_chats()
+        await initialize_chats()
 
         await log("Application is online!")
        

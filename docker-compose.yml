@@ -1,0 +1,9 @@
+services:
+  antipipisabot:
+    build: .
+    container_name: antipipisabot
+    restart: unless-stopped
+    volumes:
+      # Mounting the current directory ensures your .session file and config.py 
+      # stay on the host device and aren't wiped when the container restarts.
+      - ./:/app
